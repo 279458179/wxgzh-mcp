@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  wxgzh-mcp:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: wxgzh-mcp
+    ports:
+      - "8000:8000"
+    environment:
+      - WECHAT_APP_ID=${WECHAT_APP_ID}
+      - WECHAT_APP_SECRET=${WECHAT_APP_SECRET}
+      - WECHAT_TOKEN=${WECHAT_TOKEN}
+      - API_PORT=8000
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - TOKEN_CACHE_FILE=/app/token_cache.json
+    volumes:
+      - token-cache:/app
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  token-cache:
+    driver: local
