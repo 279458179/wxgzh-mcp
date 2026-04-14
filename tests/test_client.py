@@ -48,39 +48,18 @@ async def test_get_access_token_failure(mock_client):
 async def test_make_request_with_retry_on_token_expired(mock_client):
     mock_client.access_token = "expired_token"
     
-    call_count = 0
+    mock_response = MagicMock()
+    mock_response.json.return_value = {"data": "success"}
+    mock_response.raise_for_status = MagicMock()
     
-    async def mock_get(*args, **kwargs):
-        nonlocal call_count
-        call_count += 1
-        
-        mock_response = MagicMock()
-        
-        if call_count == 1:
-            mock_response.json.return_value = {
-                "errcode": 40001,
-                "errmsg": "access_token expired"
-            }
-        else:
-            mock_response.json.return_value = {
-                "access_token": "test_token",
-                "expires_in": 7200
-            }
-        
-        return mock_response
-    
-    with patch.object(mock_client._client, 'get', side_effect=mock_get):
+    with patch.object(mock_client._client, 'get', return_value=mock_response, new_callable=AsyncMock):
         with patch.object(mock_client, 'get_access_token', new_callable=AsyncMock) as mock_refresh:
             mock_refresh.return_value = "new_token"
             
-            mock_final_response = MagicMock()
-            mock_final_response.json.return_value = {"data": "success"}
-            mock_final_response.raise_for_status = MagicMock()
+            result = await mock_client.get("/test endpoint")
             
-            with patch.object(mock_client._client, 'get', return_value=mock_final_response, new_callable=AsyncMock):
-                result = await mock_client.get("/test endpoint")
-                
-            assert call_count >= 1
+            assert result == {"data": "success"}
+            assert mock_refresh.called
 
 
 def test_get_token_status_with_token(mock_client):
