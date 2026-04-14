@@ -6,7 +6,7 @@
 wxgzh-mcp (微信公众号管理容器)
 
 ### 项目类型
-基于Python的Docker容器应用
+基于Python和FastAPI的Web应用
 
 ### 核心功能
 提供微信公众号API的Python封装，实现公众号内容管理、用户互动、消息处理等自动化功能。
@@ -69,9 +69,9 @@ wxgzh-mcp (微信公众号管理容器)
 - **HTTP客户端**: httpx
 - **数据处理**: Pydantic
 - **异步支持**: asyncio
-- **容器化**: Docker, Docker Compose
 - **配置管理**: Python-dotenv
 - **日志管理**: Python logging
+- **测试框架**: pytest
 
 ### 3.2 项目结构
 ```
@@ -104,11 +104,9 @@ wxgzh-mcp/
 │   ├── test_materials.py
 │   ├── test_articles.py
 │   └── test_messages.py
-├── docker/
-│   ├── Dockerfile
-│   └── docker-compose.yml
 ├── .env.example
 ├── requirements.txt
+├── pytest.ini
 ├── SPEC.md
 └── README.md
 ```
@@ -219,35 +217,21 @@ LOG_LEVEL=INFO           # 日志级别
 TOKEN_CACHE_FILE=./token_cache.json  # Token缓存文件路径
 ```
 
-## 7. Docker配置
+## 7. 错误处理
 
-### 7.1 Dockerfile
-- 基于Python 3.9 slim镜像
-- 安装所有依赖
-- 暴露8000端口
-- 设置启动命令
-
-### 7.2 docker-compose.yml
-- 定义wxgzh-mcp服务
-- 环境变量配置
-- 数据卷挂载（用于token缓存）
-- 健康检查配置
-
-## 8. 错误处理
-
-### 8.1 自定义异常
+### 7.1 自定义异常
 - `WeChatAPIError` - API调用错误
 - `AuthenticationError` - 认证错误
 - `TokenExpiredError` - Token过期
 - `RateLimitError` - 频率限制
 - `InvalidParameterError` - 参数错误
 
-### 8.2 重试机制
+### 7.2 重试机制
 - 自动重试次数：3次
 - 重试延迟：1秒、2秒、4秒（指数退避）
 - 重试条件：网络错误、500错误、频率限制
 
-## 9. 安全考虑
+## 8. 安全考虑
 
 - 不在代码中硬编码AppID和AppSecret
 - 所有敏感配置通过环境变量注入
@@ -255,7 +239,7 @@ TOKEN_CACHE_FILE=./token_cache.json  # Token缓存文件路径
 - API请求HTTPS加密
 - 回调URL签名验证
 
-## 10. 依赖版本
+## 9. 依赖版本
 
 ```
 fastapi>=0.68.0
